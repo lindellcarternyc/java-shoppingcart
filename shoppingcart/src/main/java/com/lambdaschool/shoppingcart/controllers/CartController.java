@@ -32,32 +32,29 @@ public class CartController
             HttpStatus.OK);
     }
 
-    @PutMapping(value = "/add/user/{userid}/product/{productid}",
+    @PutMapping(value = "/add/product/{productid}",
         produces = {"application/json"})
-    public ResponseEntity<?> addToCart(
-        @PathVariable
-            long userid,
-        @PathVariable
-            long productid)
+    public ResponseEntity<?> addToCart(@PathVariable long productid)
     {
-        CartItem addCartTtem = cartItemService.addToCart(userid,
-            productid,
-            "I am not working");
-        return new ResponseEntity<>(addCartTtem,
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User u = userService.findByName(username);
+
+        CartItem addCartItem = cartItemService.addToCart(u.getUserid(),
+            productid, "");
+        return new ResponseEntity<>(addCartItem,
             HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/remove/user/{userid}/product/{productid}",
+    @DeleteMapping(value = "/remove/product/{productid}",
         produces = {"application/json"})
-    public ResponseEntity<?> removeFromCart(
-        @PathVariable
-            long userid,
-        @PathVariable
-            long productid)
+    public ResponseEntity<?> removeFromCart(@PathVariable long productid)
     {
-        CartItem removeCartItem = cartItemService.removeFromCart(userid,
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User u = userService.findByName(username);
+
+        CartItem removeCartItem = cartItemService.removeFromCart(u.getUserid(),
             productid,
-            "I am still not working");
+            "");
         return new ResponseEntity<>(removeCartItem,
             HttpStatus.OK);
     }
