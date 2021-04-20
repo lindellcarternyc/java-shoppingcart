@@ -7,6 +7,7 @@ import com.lambdaschool.shoppingcart.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,13 +20,14 @@ public class CartController
     @Autowired
     private UserService userService;
 
-    @GetMapping(value = "/user/{userid}",
+    @GetMapping(value = "",
         produces = {"application/json"})
-    public ResponseEntity<?> listCartItemsByUserId(
-        @PathVariable
-            long userid)
+    public ResponseEntity<?> listCartForCurrentUser()
     {
-        User u = userService.findUserById(userid);
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        User u = userService.findByName(username);
         return new ResponseEntity<>(u,
             HttpStatus.OK);
     }
