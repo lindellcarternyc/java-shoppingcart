@@ -47,6 +47,8 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .authenticated()
                 .antMatchers("/carts/**")
                 .authenticated()
+                .antMatchers("/oauth/remove-token", "/logout")
+                .authenticated()
                 .anyRequest().denyAll()
                 .and()
                 .exceptionHandling()
