@@ -1,10 +1,12 @@
 package com.lambdaschool.shoppingcart.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 
 @Configuration
 @EnableResourceServer
@@ -30,7 +32,23 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers("/roles/**")
                 .hasAnyRole("ADMIN")
                 .antMatchers("/products/**")
-                .hasAnyRole("ADMIN");
+                .hasAnyRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/users/user")
+                .hasAnyRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/users/user/*")
+                .hasAnyRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/users/user/*")
+                .hasAnyRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/users/**")
+                .hasAnyRole("ADMIN")
+                .antMatchers(HttpMethod.PATCH, "/users/**")
+                .hasAnyRole("ADMIN")
+                .antMatchers("/carts/**")
+                .authenticated()
+                .anyRequest().denyAll()
+                .and()
+                .exceptionHandling()
+                .accessDeniedHandler(new OAuth2AccessDeniedHandler());
 
         http.headers()
                 .frameOptions()
