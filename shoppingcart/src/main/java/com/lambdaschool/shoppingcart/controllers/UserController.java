@@ -1,11 +1,13 @@
 package com.lambdaschool.shoppingcart.controllers;
 
 import com.lambdaschool.shoppingcart.models.User;
+import com.lambdaschool.shoppingcart.services.SecurityContextService;
 import com.lambdaschool.shoppingcart.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,6 +28,9 @@ public class UserController
      */
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SecurityContextService securityContextService;
 
     /**
      * Returns a list of all users
@@ -98,6 +103,12 @@ public class UserController
         List<User> u = userService.findByNameContaining(userName);
         return new ResponseEntity<>(u,
             HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/myinfo", produces = "application/json")
+    public ResponseEntity<?> getCurrentUser() {
+        User user = securityContextService.getCurrentUserDetails();
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     /**

@@ -3,6 +3,7 @@ package com.lambdaschool.shoppingcart.controllers;
 import com.lambdaschool.shoppingcart.models.CartItem;
 import com.lambdaschool.shoppingcart.models.User;
 import com.lambdaschool.shoppingcart.services.CartItemService;
+import com.lambdaschool.shoppingcart.services.SecurityContextService;
 import com.lambdaschool.shoppingcart.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,15 +21,15 @@ public class CartController
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SecurityContextService securityContextService;
+
     @GetMapping(value = "",
         produces = {"application/json"})
     public ResponseEntity<?> listCartForCurrentUser()
     {
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-
-        User u = userService.findByName(username);
-        return new ResponseEntity<>(u,
+        User user = securityContextService.getCurrentUserDetails();
+        return new ResponseEntity<>(user,
             HttpStatus.OK);
     }
 
@@ -36,10 +37,9 @@ public class CartController
         produces = {"application/json"})
     public ResponseEntity<?> addToCart(@PathVariable long productid)
     {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User u = userService.findByName(username);
+        long userId = securityContextService.getCurrentUserDetails().getUserid();
 
-        CartItem addCartItem = cartItemService.addToCart(u.getUserid(),
+        CartItem addCartItem = cartItemService.addToCart(userId,
             productid, "");
         return new ResponseEntity<>(addCartItem,
             HttpStatus.OK);
@@ -49,10 +49,9 @@ public class CartController
         produces = {"application/json"})
     public ResponseEntity<?> removeFromCart(@PathVariable long productid)
     {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User u = userService.findByName(username);
+        long userId = securityContextService.getCurrentUserDetails().getUserid();
 
-        CartItem removeCartItem = cartItemService.removeFromCart(u.getUserid(),
+        CartItem removeCartItem = cartItemService.removeFromCart(userId,
             productid,
             "");
         return new ResponseEntity<>(removeCartItem,
