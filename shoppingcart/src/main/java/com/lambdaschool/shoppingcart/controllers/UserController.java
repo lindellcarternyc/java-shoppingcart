@@ -1,6 +1,7 @@
 package com.lambdaschool.shoppingcart.controllers;
 
 import com.lambdaschool.shoppingcart.models.User;
+import com.lambdaschool.shoppingcart.models.UserRoles;
 import com.lambdaschool.shoppingcart.services.SecurityContextService;
 import com.lambdaschool.shoppingcart.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The entry point for clients to access user data
@@ -193,9 +196,17 @@ public class UserController
         @PathVariable
             long id)
     {
-        userService.update(updateUser,
-            id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        User currentUser = securityContextService.getCurrentUserDetails();
+        Set<String> userRoleNames = new HashSet<>();
+        for (UserRoles ur : currentUser.getRoles()) {
+            userRoleNames.add(ur.getRole().getName().toLowerCase());
+        }
+
+        if (userRoleNames.contains("admin") || currentUser.getUserid() == id) {
+            userService.update(updateUser, id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
     /**
