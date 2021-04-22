@@ -1,18 +1,23 @@
 package com.lambdaschool.shoppingcart.controllers;
 
 import com.lambdaschool.shoppingcart.models.User;
+import com.lambdaschool.shoppingcart.models.UserRoles;
+import com.lambdaschool.shoppingcart.services.SecurityContextService;
 import com.lambdaschool.shoppingcart.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The entry point for clients to access user data
@@ -26,6 +31,9 @@ public class UserController
      */
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SecurityContextService securityContextService;
 
     /**
      * Returns a list of all users
@@ -98,6 +106,12 @@ public class UserController
         List<User> u = userService.findByNameContaining(userName);
         return new ResponseEntity<>(u,
             HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/myinfo", produces = "application/json")
+    public ResponseEntity<?> getCurrentUser() {
+        User user = securityContextService.getCurrentUserDetails();
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     /**
@@ -182,9 +196,17 @@ public class UserController
         @PathVariable
             long id)
     {
-        userService.update(updateUser,
-            id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        User currentUser = securityContextService.getCurrentUserDetails();
+        Set<String> userRoleNames = new HashSet<>();
+        for (UserRoles ur : currentUser.getRoles()) {
+            userRoleNames.add(ur.getRole().getName().toLowerCase());
+        }
+
+        if (userRoleNames.contains("admin") || currentUser.getUserid() == id) {
+            userService.update(updateUser, id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
     /**
